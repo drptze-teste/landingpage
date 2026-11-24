@@ -1490,7 +1490,9 @@ let abrirChat = () => {};
       }
       if (!r.ok) throw new Error('HTTP ' + r.status);
       concluido = true;
-      msg('Pronto! ✅ Recebemos seu pedido e o comercial vai te chamar no WhatsApp em breve (seg a sex, em horário comercial).' + (d.email ? ' Enviamos também um resumo para ' + d.email + '.' : ''));
+      msg('Pronto! ✅ Recebemos seu pedido.' + (d.email ? ' Enviamos também um resumo para ' + d.email + '.' : ''));
+      msg('Agora é só aguardar: um vendedor representante da Benesse vai entrar em contato com você o mais rápido possível. Obrigado! 👋');
+      timerFechar = setTimeout(fechar, 8000); // tempo para ler antes de o chat fechar sozinho
       registrarEvento('lead_chat', { interesse: d.interesse });
       // Conversão do Google Ads = lead realmente enviado (não só o clique no botão).
       try { if (window.gtag && CONFIG.ads.conversaoWhatsapp) gtag('event', 'conversion', { send_to: CONFIG.ads.conversaoWhatsapp, value: 1.0, currency: 'BRL' }); } catch (e) {}
@@ -1504,7 +1506,9 @@ let abrirChat = () => {};
     }
     enviando = false;
   }
-  function reiniciar() { log.innerHTML = ''; d = {}; i = 0; enviando = false; concluido = false; perguntar(); }
+  let timerFechar = 0;
+  function fechar() { clearTimeout(timerFechar); box.classList.remove('on'); box.setAttribute('aria-hidden', 'true'); }
+  function reiniciar() { clearTimeout(timerFechar); log.innerHTML = ''; d = {}; i = 0; enviando = false; concluido = false; perguntar(); }
   abrirChat = (tipo, origem) => {
     origemBtn = origem || '';
     const sim = /^(simulacao|cotacao)/.test(tipo || '') ? textoZap(tipo).replace(/^Olá![^\n]*?\.\s*/, '') : '';
@@ -1514,7 +1518,7 @@ let abrirChat = () => {};
     if (!enviando && (!log.children.length || concluido)) { if (concluido) simulacao = sim; reiniciar(); } else if (!enviando && PASSOS[i] && !PASSOS[i].chips) inp.focus();
   };
   form.addEventListener('submit', e => { e.preventDefault(); responder(inp.value); });
-  $('#chat-fechar').addEventListener('click', () => { box.classList.remove('on'); box.setAttribute('aria-hidden', 'true'); });
+  $('#chat-fechar').addEventListener('click', fechar);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#chat-fechar').click(); });
 })();
 
